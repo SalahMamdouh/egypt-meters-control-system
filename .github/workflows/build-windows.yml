@@ -42,15 +42,15 @@ jobs:
         run: |
           mvn -B clean package dependency:copy-dependencies -DoutputDirectory=target/libs
 
-      # 5. Verify build output
-      - name: Verify build
+      # 5. Copy application JAR into the input directory
+      - name: Prepare application
         shell: powershell
         run: |
-          Write-Host "Application JAR:"
-          Get-Item "target/egypt-meters-control-system-1.0-SNAPSHOT.jar"
+          Copy-Item `
+            "target/egypt-meters-control-system-1.0-SNAPSHOT.jar" `
+            "target/libs/"
 
-          Write-Host ""
-          Write-Host "Dependencies:"
+          Write-Host "Files prepared for jpackage:"
           Get-ChildItem "target/libs"
 
       # 6. Create Windows installer
