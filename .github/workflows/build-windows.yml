@@ -1,0 +1,78 @@
+name: Build Windows Application
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+
+      # 1. Get the project
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Install Java 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # 3. Verify the custom meter library exists
+      - name: Verify meter library
+        shell: powershell
+        run: |
+          if (-not (Test-Path "libs/egypt-meters-lib.jar")) {
+              Write-Error "egypt-meters-lib.jar was not found."
+              exit 1
+          }
+
+          Write-Host "Meter library found:"
+          Get-Item "libs/egypt-meters-lib.jar"
+
+      # 4. Build the application and copy dependencies
+      - name: Build application
+        run: |
+          mvn -B clean package dependency:copy-dependencies -DoutputDirectory=target/libs
+
+      # 5. Verify build output
+      - name: Verify build
+        shell: powershell
+        run: |
+          Write-Host "Application JAR:"
+          Get-Item "target/egypt-meters-control-system-1.0-SNAPSHOT.jar"
+
+          Write-Host ""
+          Write-Host "Dependencies:"
+          Get-ChildItem "target/libs"
+
+      # 6. Create Windows installer
+      - name: Create Windows installer
+        shell: powershell
+        run: |
+          jpackage `
+            --type exe `
+            --name "EMCS" `
+            --input target/libs `
+            --main-jar egypt-meters-control-system-1.0-SNAPSHOT.jar `
+            --main-class org.example.Main `
+            --dest target/installer `
+            --app-version 1.0.0 `
+            --vendor "Egypt Meters Control System" `
+            --win-shortcut `
+            --win-menu `
+            --win-dir-chooser
+
+      # 7. Upload installer
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: EMCS-Windows-Installer
+          path: target/installer/*.exe
