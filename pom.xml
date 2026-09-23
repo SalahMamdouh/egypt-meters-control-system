@@ -34,7 +34,7 @@
             <artifactId>meter-library</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>/Users/salahmamdouh/Documents/EgyptMetersLib/EgyptMetersLib/out/artifacts/egypt_meters_lib/egypt-meters-lib.jar</systemPath>
+            <systemPath>${project.basedir}/libs/egypt-meters-lib.jar</systemPath>
         </dependency>
 
         <dependency>
